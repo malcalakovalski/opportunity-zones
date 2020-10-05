@@ -61,22 +61,14 @@ manu_theme <- function() {
 
 parker_donations  <-
   readRDS("data/parker_donations.RDS") %>%
-  mutate(Amount = as.numeric(Amount))
+  mutate(Amount = as.numeric(Amount),
+         Date = as.Date(Date))
 
 
 # Plots -------------------------------------------------------------------
-parker_donations %>%
-  select(Date, Party, Amount) %>%
-  drop_na() %>%
-  ggplot(aes(x = Party,
-              y = Amount)) +
-  geom_bar(stat = 'identity') +
-  facet_wrap(~ year(Date)) + 
-  scale_y_continuous(name = '', labels = scales::dollar) +
-  theme_hc()
 
-parker_donations %>% 
-  melt(id = "Party")
+
+# Facet by year -----------------------------------------------------------
 
 parker_donations %>%
   select(Date, Party, Amount) %>%
@@ -91,7 +83,31 @@ parker_donations %>%
   scale_fill_manual(values = c('dodgerblue', 'firebrick1'))  +
   facet_wrap(~ year(Date)) + 
   scale_y_continuous(name = '', labels = scales::dollar) +
-  theme_hc() 
+  theme_hc() +
+  ggsave(filename="donationsByYear.png", device="png", path = "figures/",
+         dpi=500, width = 5, height = 5.5)
+
+parker_donations %>%
+  select(Date, Party, Amount) %>%
+  melt(id = c("Date", "Party")) %>%
+  mutate(Date = year(Date), Party = as.factor(Party)) %>%
+  mutate(Date =  ymd(Date, truncated = 2L)) %>%
+  select(-variable) %>%
+  drop_na() %>%
+  group_by(year(Date)) %>%
+  ggplot(aes(x = Date,
+             y = value,
+             fill = Party)
+         ) +
+  geom_bar(stat  = 'identity') +
+
+  scale_fill_manual(name = "", values = c('dodgerblue', 'firebrick1'))  +
+  scale_y_continuous(name = '', labels = scales::dollar) +
+  scale_x_date(breaks = "1 year", date_labels = "%Y") +
+  theme_hc() +
+  labs(x = "") +
+  ggsave(filename="donations.png", device="png", path = "figures/",
+         dpi=500, width = 5, height = 5.5)
   
 
   

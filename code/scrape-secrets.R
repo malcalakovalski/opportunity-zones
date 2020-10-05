@@ -68,8 +68,10 @@ parker_donations <-
   mutate(across(where(is.character), str_trim)) %>%
   select(Date, Category, Contributor, Address, Occupation, Recipient, Party, Amount) %>%
   map_dfr(str_to_title, c('Occupation', 'Contributor')) %>%
-  mutate(Address = gsub("Ca", "CA", parker_donations$Address))
+  mutate(Address = gsub("Ca", "CA", parker_donations$Address)) %>%
+  filter(Amount > 0)
 
 #save as xlxs
 write_xlsx(parker_donations, "data/sean_parker_donations.xlsx")
+saveRDS(parker_donations, "data/parker_donations.RDS")
 
